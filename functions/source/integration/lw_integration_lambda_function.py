@@ -238,20 +238,21 @@ def send_metrics_event(lw_client, dataset, version, account, event, subaccount="
     logger.info("Call /api/v2/telemetry/OtelMetrics to send events.")
 
     try:
-        payload = '''
-        {{
-            "account": "{}",
-            "sub-account": "{}",
+        payload = {
+            "account": str(account),
+            "sub-account": str(subaccount),
             "tech-partner": "AWS",
             "integration-name": "aws-org-cf-lacework",
-            "version": "{}",
+            "version": str(version),
             "service": "AWS CloudFormation",
             "install-method": "cloudformation",
             "function": "lw_integration_lambda_function.py",
-            "event": "{}",
-            "event-data": {}
-        }}
-        '''.format(account, subaccount, version, event, eventdata)
+            "event": str(event),
+            "event-data": eventdata,
+            "sample_rate_100": True,
+            "telemetry_source": "external",
+            "telemetry_type":"customer"
+        }
         logger.info('Generate payload : {}'.format(payload))
         params = {
             "dataset": dataset
@@ -263,7 +264,6 @@ def send_metrics_event(lw_client, dataset, version, account, event, subaccount="
         )
         resp.raise_for_status()
         logger.info("LW API server response {} {}".format(resp, resp.content))
-
     except Exception as e:
         logger.warning("Get error sending events to metrics API: {}.".format(e))
 
